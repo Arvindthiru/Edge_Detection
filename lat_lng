@@ -1,0 +1,25 @@
+library(ggmap)
+register_google(key = "AIzaSyBE7bs-amwZHzzrBwK7s4HJkwU8D7J7R7A")
+loc <- read.csv(file.choose())
+locs <- data.frame(loc)
+just_loc <- locs[,c("location")]
+just_loc
+#just_loc1 <- just_loc[sample(1:nrow(just_loc)),]
+just_loc1 <- sample(just_loc)
+just_loc1
+#geocode(toString(just_loc[1]))
+orig <- data.frame(matrix(0, ncol = 2, nrow = 2400))
+x <- c("lon", "lat")
+colnames(orig) <- x
+orig
+for(i in 1:2400)
+{
+  #Print("Working...")
+  result <- geocode(toString(just_loc1[i]))
+#as.numeric(result[1])
+  orig$lon[i-2000] <- as.numeric(result[1])
+  orig$lat[i-2000] <- as.numeric(result[2])
+  #orig$address[1] <- as.character(result[3])
+}
+orig
+write.table(orig,"/Users/arvindthirumurugan/Desktop/Second Semester/Data Intensive computing/New_key/lat_lng_locs.csv",append=T,row.names = F,col.names = T,sep=",")

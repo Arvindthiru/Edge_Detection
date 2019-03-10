@@ -24,7 +24,8 @@ import os
 import cv2
 import numpy as np
 
-import utils
+#import utils
+from utils import *
 
 # Prewitt operator
 prewitt_x = [[1, 0, -1]] * 3
@@ -111,14 +112,19 @@ def convolve2d(img, kernel):
     # TODO: implement this function.
     fkernel = flip_kernel(kernel)
     x = len(img)
-    pimg = pad_image(img)
+    pw = int(len(kernel)/2)
+    print(pw)
+    pimg = zero_pad(img,pw,pw)
+    print(np.shape(pimg))
+    #print(len(pimg))
+    #print(len(pimg[0]))
     img_conv = []
     img_conv_elem = []
     m=0
     n=0
     sum=0
     for i in range(0,len(pimg)-2):
-        for j in range(0,len(pimg)-2):
+        for j in range(0,len(pimg[0])-2):
             m=0
             for k in range(i,i+3):
                 for l in range(j,j+3):
@@ -130,13 +136,13 @@ def convolve2d(img, kernel):
             sum = 0
         img_conv.append(img_conv_elem)
         img_conv_elem = []
-
+    print("In Convolve")
     print(np.shape(img_conv))
     #raise NotImplementedError
     return img_conv
 
 
-def normalize(n_img):
+def normalize(n_img, flag = False):
     """Normalizes a given image.
 
     Hints:
@@ -157,8 +163,11 @@ def normalize(n_img):
     n_elem = []
     norm = []
     n = len(n_img)
+    m = len(n_img[0])
+    print("In Normalize")
+    print(n,m)
     for i in range(0,n):
-        for j in range(0,n):
+        for j in range(0,m):
             if(n_img[i][j]>max):
                 max = n_img[i][j]
             if(n_img[i][j]<min):
@@ -168,12 +177,17 @@ def normalize(n_img):
     print(d)
     print(n)
     for i in range(0,n):
-        for j in range(0,n):
+        for j in range(0,m):
             # Multiplying by 255 here check
-            n_elem.append( ((n_img[i][j]-min)/d) * 255 )
+            if(flag == False):
+                n_elem.append( ((n_img[i][j]-min)/d) * 255 )
+            elif(flag == True):
+                n_elem.append( round( ( (n_img[i][j]-min)/d ) * 255 )  )
         norm.append(n_elem)
         n_elem = []
     #raise NotImplementedError
+    #if(flag == True):
+    #	print (norm)
     return norm
 
 
@@ -202,7 +216,7 @@ def edge_magnitude(edge_x, edge_y):
     Hints:
         Combine edges along two orthogonal directions using the following equation:
 
-        edge_mag = sqrt(edge_x ** 2 + edge_y **).
+        edge_mag = sqrt(edge_x ** 2 + edge_y ** 2).
 
         Make sure that you normalize the edge_mag, so that the maximum pixel value is 1.
 
@@ -214,7 +228,9 @@ def edge_magnitude(edge_x, edge_y):
         edge_mag: nested list (int), image containing magnitude of detected edges.
     """
     # TODO: implement this function.
-    raise NotImplementedError
+    edge_mag = np.sqrt( edge_x ** 2 + edge_y ** 2)
+    edge_mag = normalize(edge_mag,True)
+    #raise NotImplementedError
     return edge_mag
 
 def flip_kernel(kernel):
@@ -234,11 +250,15 @@ def flip_kernel(kernel):
     print("The flipped kernel is : ")
     print(fkernel)
     return fkernel
-
+'''
 def pad_image(img):
     #Pads zeros along the borders of an image
     pimg = copy.deepcopy(img)
+    m = len(pimg[0])
+    print(m)
     n = len(pimg)
+    print(n)
+    print(np.shape(img))
     z_elem = []
     for i in range(0,n+2):
         z_elem.append(0)
@@ -248,18 +268,14 @@ def pad_image(img):
     pimg.append(z_elem)
     pimg.insert(0,z_elem)
     print("Dimensions of Padded Image:" +str(np.shape(pimg)))
-
-    return pimg
-
+    #print(pimg)
+    raise NotImplementedError
+   	return pimg
+'''
 def main():
     args = parse_args()
-
     img = read_image(args.img_path)
-    ##show_image(img)
     print("Image dimensions :" +str(np.shape(img)))
-
-    #print(convolve2d([[1,1,1],[1,1,1],[1,1,1]],[[2,2,2],[2,2,2],[2,2,2]]))
-    #raise NotImplementedError
     if args.kernel in ["prewitt", "Prewitt"]:
         kernel_x = prewitt_x
         kernel_y = prewitt_y
@@ -274,7 +290,6 @@ def main():
 
     img_edge_x = detect_edges(img, kernel_x, False)
     img_edge_x = np.asarray(img_edge_x)
-    #print(normalize(img_edge_x))
     write_image(normalize(img_edge_x), os.path.join(args.rs_directory, "{}_edge_x.jpg".format(args.kernel.lower())))
 
     img_edge_y = detect_edges(img, kernel_y, False)

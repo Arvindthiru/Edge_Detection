@@ -31,6 +31,9 @@ import argparse
 import json
 import os
 
+import numpy as np
+import cv2
+
 import utils
 from task1 import *   # you could modify this line
 
@@ -65,8 +68,75 @@ def detect(img, template):
             y: column that the character appears (starts from 0).
     """
     # TODO: implement this function.
+    print(np.shape(img))
+    print(np.shape(template))
+    img_r = len(img)
+    img_c = len(img[0])
+    print(img_r,img_c)
+    temp_r = len(template)
+    temp_c = len(template[0])
+    print(temp_r,temp_c)
+    diff = []
+    diff_elem = []
+    sum = 0
+    #img = np.int64(img)
+    m=0
+    n=0
+    min =5
+    max =0
+    #print(template)
+    #print(img)
+    #cv2.imshow('image',np.array(img))
+    #cv2.waitKey(0)
+    for i in range(0,img_r - (temp_r)):
+        for j in range(0, img_c - (temp_c)):
+            m = 0
+            #print("i value" + str(i), "j value"+str(j))
+            
+            for k in range(i, i+temp_r):
+                for l in range(j, j+temp_c):
+                    #print("k value" + str(k),"l value"+str(l) )
+                    #print(abs(template[m][n] - img[k][l]))
+                    #sum  = sum + (template[m][n] - img[k][l])**2
+                    #print(sum)
+                    #if(sum < min):
+                    #    print("k value" + str(k),"l value"+str(l),"sum "+str(sum) )
+
+                    n = n+1
+                n=0
+                m = m+1
+            diff_elem.append(sum)
+            sum = 0
+        diff.append(diff_elem)
+        diff_elem=[]
+    #print(diff[307][478])
+    #raise NotImplementedError
+    #print(diff)
+    print("In detect")
+    print(np.shape(diff))
+    x = len(diff)
+    y = len(diff[0])
+    print(x,y)
+    l_x = 0
+    l_y = 0
+    '''
+    img2 = img
+    for i in range(0,x):
+        for j in range(0,y):
+            if(diff[i][j]<min):
+                min = diff[i][j]
+                l_x,l_y = i,j
+                #print(min,l_x,l_y)
+                #cv2.rectangle(np.array(img2),(l_x,l_y),(l_x+temp_r-1,l_y+temp_c-1),(255,255,255),10)
+    print(min)
+    '''
+    #cv2.imshow('image',np.array(img2))
+    #cv2.waitKey(0)
+
     raise NotImplementedError
     return coordinates
+
+def Ncc()
 
 
 def save_results(coordinates, template, template_name, rs_directory):
