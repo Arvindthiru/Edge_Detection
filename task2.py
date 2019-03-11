@@ -107,20 +107,27 @@ def detect(img, template):
     #print(x,y)
     #l_x = 0
     #l_y = 0
-    # threshold for a 0.61
-    #threshold for c 0.63
+    # threshold for a 0.7
+    #threshold for c 0.7
+    coordinates = []
+    # xy =[]
     img2 = img
     for i in range(0,x):
         for j in range(0,y):
-            if(diff[i][j]>0.63):
+            if(diff[i][j]>0.80):
                 min = diff[i][j]
                 l_x,l_y = i,j
                 print(min,l_x,l_y)
+                # xy.append(l_x, l_y)
+                # xy.append(l_y)
+                coordinates.append((l_x, l_y))
+                # xy=[]
                 #cv2.rectangle(np.array(img2),(l_x,l_y),(l_x+temp_r-1,l_y+temp_c-1),(255,255,255),10)
-    #print(min)
+    #print(coordinates)
+    draw_rectangle(coordinates,temp_r,temp_c)
     
-    cv2.imshow('image',np.array(img))
-    cv2.waitKey(0)
+    #cv2.imshow('image',np.array(img))
+    #cv2.waitKey(0)
 
     raise NotImplementedError
     return coordinates
@@ -156,7 +163,7 @@ def Ncc(img_patch,template):
     deno2 = np.sqrt(deno2)
     #print(imean)
     #print(imgs)
-    print("Next")
+    #print("Next")
     for i in range(0,m):
         for j in range(0,n):
             if(deno1!=0):
@@ -172,6 +179,13 @@ def Ncc(img_patch,template):
     print(ncc_sum)
     return ncc_sum
     #raise NotImplementedError
+def draw_rectangle(coordinates,temp_r,temp_c):
+    new_img = cv2.imread("./data/proj1-task2.jpg")
+    for i, num in enumerate(coordinates):
+        #print(num[1],num[0])
+        cv2.rectangle(new_img,(num[1],num[0]),(num[1]+temp_c,num[0]+temp_r),(255,0,0),2)
+        cv2.imshow("rectangle",new_img)
+        k = cv2.waitKey(0)
 
 def Mean(a):
     sum=0
@@ -197,6 +211,8 @@ def main():
     args = parse_args()
 
     img = read_image(args.img_path)
+    #write_image(img,"./data/gray_image_task_2.jpg")
+    #raise NotImplementedError
     template = read_image(args.template_path)
 
     #a=[[1,2,1],[1,2,1],[1,2,1]]
