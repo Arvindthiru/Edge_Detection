@@ -107,11 +107,12 @@ def detect(img, template):
     #print(x,y)
     #l_x = 0
     #l_y = 0
-    
+    # threshold for a 0.61
+    #threshold for c 0.63
     img2 = img
     for i in range(0,x):
         for j in range(0,y):
-            if(diff[i][j]>0.59):
+            if(diff[i][j]>0.63):
                 min = diff[i][j]
                 l_x,l_y = i,j
                 print(min,l_x,l_y)
