@@ -34,7 +34,7 @@ import os
 import numpy as np
 import cv2
 
-import utils
+from utils import *
 from task1 import *   # you could modify this line
 
 
@@ -68,43 +68,30 @@ def detect(img, template):
             y: column that the character appears (starts from 0).
     """
     # TODO: implement this function.
-    print(np.shape(img))
-    print(np.shape(template))
+    #print(np.shape(img))
+    #print(np.shape(template))
     img_r = len(img)
     img_c = len(img[0])
-    print(img_r,img_c)
+    #print(img_r,img_c)
     temp_r = len(template)
     temp_c = len(template[0])
-    print(temp_r,temp_c)
+    #print(temp_r,temp_c)
     diff = []
     diff_elem = []
     sum = 0
     #img = np.int64(img)
-    m=0
-    n=0
-    min =5
-    max =0
     #print(template)
     #print(img)
     #cv2.imshow('image',np.array(img))
     #cv2.waitKey(0)
-    for i in range(0,img_r - (temp_r)):
-        for j in range(0, img_c - (temp_c)):
-            m = 0
-            #print("i value" + str(i), "j value"+str(j))
-            
-            for k in range(i, i+temp_r):
-                for l in range(j, j+temp_c):
-                    #print("k value" + str(k),"l value"+str(l) )
-                    #print(abs(template[m][n] - img[k][l]))
-                    #sum  = sum + (template[m][n] - img[k][l])**2
-                    #print(sum)
-                    #if(sum < min):
-                    #    print("k value" + str(k),"l value"+str(l),"sum "+str(sum) )
+    ### check range :)
+    #cv2.imshow('image',np.array(img))
+    #cv2.waitKey(0)
 
-                    n = n+1
-                n=0
-                m = m+1
+    for i in range(0,img_r - (temp_r-1)):
+        for j in range(0, img_c - (temp_c-1)):
+            img_patch = crop(img,i,i+temp_r,j,j+temp_c)
+            sum = Ncc(img_patch,template)
             diff_elem.append(sum)
             sum = 0
         diff.append(diff_elem)
@@ -112,31 +99,89 @@ def detect(img, template):
     #print(diff[307][478])
     #raise NotImplementedError
     #print(diff)
-    print("In detect")
+    #print("In detect")
     print(np.shape(diff))
+    print(diff)
     x = len(diff)
     y = len(diff[0])
-    print(x,y)
-    l_x = 0
-    l_y = 0
-    '''
+    #print(x,y)
+    #l_x = 0
+    #l_y = 0
+    
     img2 = img
     for i in range(0,x):
         for j in range(0,y):
-            if(diff[i][j]<min):
+            if(diff[i][j]>0.59):
                 min = diff[i][j]
                 l_x,l_y = i,j
-                #print(min,l_x,l_y)
+                print(min,l_x,l_y)
                 #cv2.rectangle(np.array(img2),(l_x,l_y),(l_x+temp_r-1,l_y+temp_c-1),(255,255,255),10)
-    print(min)
-    '''
-    #cv2.imshow('image',np.array(img2))
-    #cv2.waitKey(0)
+    #print(min)
+    
+    cv2.imshow('image',np.array(img))
+    cv2.waitKey(0)
 
     raise NotImplementedError
     return coordinates
 
-def Ncc()
+def Ncc(img_patch,template):
+    m,n=0,0
+    imean=0
+    tmean=0
+    deno1=0
+    deno2=0
+    ncc_sum =0
+    imgs = copy.deepcopy(img_patch)
+    temp = copy.deepcopy(template)
+    #print(np.shape(imgs))
+    # print(np.shape(temp))
+    imean = Mean(imgs)
+    tmean = Mean(temp)
+    #print(imean)
+    m=len(imgs)
+    n=len(imgs[0])
+    #print(temp)
+    #xprint(img_patch - imean)
+    #print(template - tmean)
+    for i in range(0,m):
+        for j in range(0,n):
+            imgs[i][j] = imgs[i][j] - imean
+            temp[i][j] = temp[i][j] - tmean
+    for i in range(0,m):
+        for j in range(0,n):
+            deno1 = deno1 + (imgs[i][j])**2
+            deno2 = deno2 + (temp[i][j])**2
+    deno1 = np.sqrt(deno1)
+    deno2 = np.sqrt(deno2)
+    #print(imean)
+    #print(imgs)
+    print("Next")
+    for i in range(0,m):
+        for j in range(0,n):
+            if(deno1!=0):
+                imgs[i][j] = imgs[i][j]/deno1
+            temp[i][j] = temp[i][j]/deno2
+    #print(imgs[0][0])
+    #print(temp)
+    ncc = elementwise_mul(imgs,temp)
+    #print(np.shape(ncc))
+    for i in range(0,m):
+        for j in range(0,n):
+            ncc_sum = ncc_sum + ncc[i][j]
+    print(ncc_sum)
+    return ncc_sum
+    #raise NotImplementedError
+
+def Mean(a):
+    sum=0
+    m = len(a)
+    n = len(a[0])
+    for i in range(0,m):
+        for j in range(0,n):
+            sum = sum + a[i][j]
+    return sum /(m*n)
+
+
 
 
 def save_results(coordinates, template, template_name, rs_directory):
@@ -152,6 +197,11 @@ def main():
 
     img = read_image(args.img_path)
     template = read_image(args.template_path)
+
+    #a=[[1,2,1],[1,2,1],[1,2,1]]
+    #b=[[2,2,2],[2,2,2],[2,2,2]]
+
+    #print(detect(a,b))
 
     coordinates = detect(img, template)
 
