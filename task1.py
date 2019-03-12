@@ -80,10 +80,8 @@ def write_image(img, img_saving_path):
     #print(img)
     if isinstance(img, list):
         img = np.asarray(img, dtype=np.uint8)
-        print("1")
     elif isinstance(img, np.ndarray):
         if not img.dtype == np.uint8:
-            print("2")
             assert np.max(img) <= 1, "Maximum pixel value {:.3f} is greater than 1".format(np.max(img))
             img = (255 * img).astype(np.uint8)
     else:
@@ -113,11 +111,7 @@ def convolve2d(img, kernel):
     fkernel = flip_kernel(kernel)
     x = len(img)
     pw = int(len(kernel)/2)
-    print(pw)
     pimg = zero_pad(img,pw,pw)
-    print(np.shape(pimg))
-    #print(len(pimg))
-    #print(len(pimg[0]))
     img_conv = []
     img_conv_elem = []
     m=0
@@ -136,8 +130,6 @@ def convolve2d(img, kernel):
             sum = 0
         img_conv.append(img_conv_elem)
         img_conv_elem = []
-    print("In Convolve")
-    print(np.shape(img_conv))
     #raise NotImplementedError
     return img_conv
 
@@ -164,18 +156,13 @@ def normalize(n_img, flag = False):
     norm = []
     n = len(n_img)
     m = len(n_img[0])
-    print("In Normalize")
-    print(n,m)
     for i in range(0,n):
         for j in range(0,m):
             if(n_img[i][j]>max):
                 max = n_img[i][j]
             if(n_img[i][j]<min):
                 min = n_img[i][j]
-    print(max,min)
     d = max - min
-    print(d)
-    print(n)
     for i in range(0,n):
         for j in range(0,m):
             # Multiplying by 255 here check
@@ -186,8 +173,6 @@ def normalize(n_img, flag = False):
         norm.append(n_elem)
         n_elem = []
     #raise NotImplementedError
-    #if(flag == True):
-    #	print (norm)
     return norm
 
 
@@ -239,43 +224,17 @@ def flip_kernel(kernel):
     fkernel = [[0,0,0],[0,0,0],[0,0,0]]
     l = n-1
     k=n
-    print("length of kernel :" + str(n))
     for i in range(0,n):
         k=k-1
         l=n-1
         for j in range(0,n):
             fkernel[k][l] = kernel[i][j]
             l=l-1
-
-    print("The flipped kernel is : ")
-    print(fkernel)
     return fkernel
-'''
-def pad_image(img):
-    #Pads zeros along the borders of an image
-    pimg = copy.deepcopy(img)
-    m = len(pimg[0])
-    print(m)
-    n = len(pimg)
-    print(n)
-    print(np.shape(img))
-    z_elem = []
-    for i in range(0,n+2):
-        z_elem.append(0)
-    for i in range(0,n):
-        pimg[i].append(0)
-        pimg[i].insert(0,0)
-    pimg.append(z_elem)
-    pimg.insert(0,z_elem)
-    print("Dimensions of Padded Image:" +str(np.shape(pimg)))
-    #print(pimg)
-    raise NotImplementedError
-   	return pimg
-'''
+
 def main():
     args = parse_args()
     img = read_image(args.img_path)
-    print("Image dimensions :" +str(np.shape(img)))
     if args.kernel in ["prewitt", "Prewitt"]:
         kernel_x = prewitt_x
         kernel_y = prewitt_y

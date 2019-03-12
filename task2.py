@@ -37,6 +37,12 @@ import cv2
 from utils import *
 from task1 import *   # you could modify this line
 
+thresholds ={
+    "./data/a.jpg":0.7,
+    "./data/b.jpg":0.85,
+    "./data/c.jpg":0.7
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="cse 473/573 project 1.")
@@ -54,7 +60,7 @@ def parse_args():
     return args
 
 
-def detect(img, template):
+def detect(img, template,threshold):
     """Detect a given character, i.e., the character in the template image.
 
     Args:
@@ -68,26 +74,14 @@ def detect(img, template):
             y: column that the character appears (starts from 0).
     """
     # TODO: implement this function.
-    #print(np.shape(img))
-    #print(np.shape(template))
     img_r = len(img)
     img_c = len(img[0])
-    #print(img_r,img_c)
     temp_r = len(template)
     temp_c = len(template[0])
-    #print(temp_r,temp_c)
     diff = []
     diff_elem = []
     sum = 0
-    #img = np.int64(img)
-    #print(template)
-    #print(img)
-    #cv2.imshow('image',np.array(img))
-    #cv2.waitKey(0)
-    ### check range :)
-    #cv2.imshow('image',np.array(img))
-    #cv2.waitKey(0)
-
+    print("Please wait for 5-6 minutes")
     for i in range(0,img_r - (temp_r-1)):
         for j in range(0, img_c - (temp_c-1)):
             img_patch = crop(img,i,i+temp_r,j,j+temp_c)
@@ -96,43 +90,33 @@ def detect(img, template):
             sum = 0
         diff.append(diff_elem)
         diff_elem=[]
-    #print(diff[307][478])
-    #raise NotImplementedError
-    #print(diff)
-    #print("In detect")
-    print(np.shape(diff))
-    print(diff)
     x = len(diff)
     y = len(diff[0])
-    #print(x,y)
-    #l_x = 0
-    #l_y = 0
-    # threshold for a 0.7
-    #threshold for c 0.7
     coordinates = []
-    # xy =[]
     img2 = img
     for i in range(0,x):
         for j in range(0,y):
-            if(diff[i][j]>0.80):
+            if(diff[i][j]>threshold):
                 min = diff[i][j]
                 l_x,l_y = i,j
-                print(min,l_x,l_y)
-                # xy.append(l_x, l_y)
-                # xy.append(l_y)
-                coordinates.append((l_x, l_y))
-                # xy=[]
-                #cv2.rectangle(np.array(img2),(l_x,l_y),(l_x+temp_r-1,l_y+temp_c-1),(255,255,255),10)
-    #print(coordinates)
-    draw_rectangle(coordinates,temp_r,temp_c)
-    
-    #cv2.imshow('image',np.array(img))
-    #cv2.waitKey(0)
-
-    raise NotImplementedError
+                if(len(coordinates) >= 1):
+                    last = coordinates[-1]
+                    ty = l_y - last[1]
+                    tx = l_x - last[0]
+                    if ty+tx !=1 :
+                        coordinates.append((l_x,l_y))
+                else:
+                    coordinates.append((l_x, l_y))
+    if(len(coordinates) > 20):
+        del(coordinates[-1])
+    #draw_rectangle(coordinates,temp_r,temp_c)
+    #raise NotImplementedError
     return coordinates
 
 def Ncc(img_patch,template):
+'''
+Computes Normalized cross correlation 
+'''
     m,n=0,0
     imean=0
     tmean=0
@@ -141,16 +125,10 @@ def Ncc(img_patch,template):
     ncc_sum =0
     imgs = copy.deepcopy(img_patch)
     temp = copy.deepcopy(template)
-    #print(np.shape(imgs))
-    # print(np.shape(temp))
     imean = Mean(imgs)
     tmean = Mean(temp)
-    #print(imean)
     m=len(imgs)
     n=len(imgs[0])
-    #print(temp)
-    #xprint(img_patch - imean)
-    #print(template - tmean)
     for i in range(0,m):
         for j in range(0,n):
             imgs[i][j] = imgs[i][j] - imean
@@ -161,33 +139,31 @@ def Ncc(img_patch,template):
             deno2 = deno2 + (temp[i][j])**2
     deno1 = np.sqrt(deno1)
     deno2 = np.sqrt(deno2)
-    #print(imean)
-    #print(imgs)
-    #print("Next")
     for i in range(0,m):
         for j in range(0,n):
             if(deno1!=0):
                 imgs[i][j] = imgs[i][j]/deno1
             temp[i][j] = temp[i][j]/deno2
-    #print(imgs[0][0])
-    #print(temp)
     ncc = elementwise_mul(imgs,temp)
-    #print(np.shape(ncc))
     for i in range(0,m):
         for j in range(0,n):
             ncc_sum = ncc_sum + ncc[i][j]
-    print(ncc_sum)
     return ncc_sum
     #raise NotImplementedError
+
+'''
 def draw_rectangle(coordinates,temp_r,temp_c):
     new_img = cv2.imread("./data/proj1-task2.jpg")
     for i, num in enumerate(coordinates):
-        #print(num[1],num[0])
         cv2.rectangle(new_img,(num[1],num[0]),(num[1]+temp_c,num[0]+temp_r),(255,0,0),2)
         cv2.imshow("rectangle",new_img)
         k = cv2.waitKey(0)
+'''
 
 def Mean(a):
+'''
+Computes mean
+'''
     sum=0
     m = len(a)
     n = len(a[0])
@@ -195,9 +171,6 @@ def Mean(a):
         for j in range(0,n):
             sum = sum + a[i][j]
     return sum /(m*n)
-
-
-
 
 def save_results(coordinates, template, template_name, rs_directory):
     results = {}
@@ -211,17 +184,10 @@ def main():
     args = parse_args()
 
     img = read_image(args.img_path)
-    #write_image(img,"./data/gray_image_task_2.jpg")
-    #raise NotImplementedError
     template = read_image(args.template_path)
-
-    #a=[[1,2,1],[1,2,1],[1,2,1]]
-    #b=[[2,2,2],[2,2,2],[2,2,2]]
-
-    #print(detect(a,b))
-
-    coordinates = detect(img, template)
-
+    threshold = thresholds[args.template_path]
+    coordinates = detect(img, template,threshold)
+    print("Done computing")
     template_name = "{}.json".format(os.path.splitext(os.path.split(args.template_path)[1])[0])
     save_results(coordinates, template, template_name, args.rs_directory)
 
